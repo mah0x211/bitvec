@@ -52,6 +52,7 @@ static inline int bitvec_init( bitvec_t *bv, size_t nbit )
     if( ( bv->vec = calloc( sizeof( BV_TYPE ), bv->nvec ) ) ){
         return 0;
     }
+    bv->vec = NULL;
     
     return -1;
 }
@@ -103,7 +104,7 @@ static inline void bitvec_dispose( bitvec_t *bv )
 
 static inline int bitvec_get( bitvec_t *bv, BV_TYPE pos )
 {
-    if( pos <= bv->nbit ){
+    if( bv->vec && pos <= bv->nbit ){
         return (int)((bv->vec[pos/BV_BIT] >> (pos % BV_BIT)) & (BV_TYPE)1);
     }
     
@@ -113,7 +114,7 @@ static inline int bitvec_get( bitvec_t *bv, BV_TYPE pos )
 
 static inline int bitvec_set( bitvec_t *bv, BV_TYPE pos )
 {
-    if( pos <= bv->nbit ){
+    if( bv->vec && pos <= bv->nbit ){
         bv->vec[pos / BV_BIT] |= (BV_TYPE)1 << ( pos % BV_BIT );
         return 0;
     }
@@ -124,7 +125,7 @@ static inline int bitvec_set( bitvec_t *bv, BV_TYPE pos )
 
 static inline int bitvec_unset( bitvec_t *bv, BV_TYPE pos )
 {
-    if( pos <= bv->nbit ){
+    if( bv->vec && pos <= bv->nbit ){
         bv->vec[pos / BV_BIT] &= ~( (BV_TYPE)1 << ( pos % BV_BIT ) );
         return 0;
     }
