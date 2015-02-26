@@ -39,6 +39,17 @@ int main (int argc, const char * argv[])
     assert( bitvec_set( ptr, 129 ) == 0 );
     // returns 1
     printf( "129: %d\n", bitvec_get( ptr, 129 ) );
+
+    // set range
+    assert( bitvec_set_range( ptr, 62, 90 ) == 0 );
+    for( size_t i = 62; i <= 90; i++ ){
+        assert( bitvec_get( ptr, i ) == 1 );
+    }
+    // unset range
+    assert( bitvec_unset_range( ptr, 62, 90 ) == 0 );
+    for( size_t i = 62; i <= 90; i++ ){
+        assert( bitvec_get( ptr, i ) == 0 );
+    }
     
     // resize
     bitvec_resize( ptr, 107 );
