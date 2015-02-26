@@ -55,11 +55,19 @@ deallocates the memory allocation of data inside of `bv`.
 - `*bv`: non-Null bitvec_t pointer.
 
 
-## Getting or setting a bit value.
+## Getting a bit value
 
 ### int bitvec_get( bitvec_t *bv, BV_TYPE pos )
 
 returns bit value `0` or `1` at `pos` position, or `-1` if a `pos` is out of range.
+
+**Parameters**
+
+- `*bv`: non-Null bitvec_t pointer.
+- `BV_TYPE pos`: position of bit.
+
+
+## Setting a bit value
 
 ### int bitvec_set( bitvec_t *bv, BV_TYPE pos )
 
@@ -75,6 +83,21 @@ returns `0` on success, or `-1` if a `pos` is out of range.
 - `BV_TYPE pos`: position of bit.
 
 
+## Setting the range of bits
+
+### int bitvec_set_range( bitvec_t *bv, BV_TYPE from, BV_TYPE to )
+
+returns `0` on success, or `-1` if a `pos` is out of range.
+
+### int bitvec_unset_range( bitvec_t *bv, BV_TYPE from, BV_TYPE to )
+
+returns `0` on success, or `-1` if a `pos` is out of range.
+
+**Parameters**
+
+- `*bv`: non-Null bitvec_t pointer.
+- `BV_TYPE from`: the start position of bit.
+- `BV_TYPE to`: the end position of bit.
 
 ## Usage
 
@@ -120,6 +143,17 @@ int main (int argc, const char * argv[])
     assert( bitvec_set( ptr, 129 ) == 0 );
     // returns 1
     printf( "129: %d\n", bitvec_get( ptr, 129 ) );
+
+    // set range
+    assert( bitvec_set_range( ptr, 62, 90 ) == 0 );
+    for( size_t i = 62; i <= 90; i++ ){
+        assert( bitvec_get( ptr, i ) == 1 );
+    }
+    // unset range
+    assert( bitvec_unset_range( ptr, 62, 90 ) == 0 );
+    for( size_t i = 62; i <= 90; i++ ){
+        assert( bitvec_get( ptr, i ) == 0 );
+    }
     
     // resize
     bitvec_resize( ptr, 107 );
