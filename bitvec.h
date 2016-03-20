@@ -157,7 +157,7 @@ static inline size_t bitvec_ntz( bitvec_t *bv )
         }
     }
 
-    return 0;
+    return bv->nbit;
 }
 
 
