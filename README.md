@@ -99,6 +99,18 @@ returns `0` on success, or `-1` if a `pos` is out of range.
 - `BV_TYPE from`: the start position of bit.
 - `BV_TYPE to`: the end position of bit.
 
+
+## Getting a number of trailing zeros
+
+### int bitvec_ntz( bitvec_t *bv )
+
+returns a number of trailing zeros.
+
+**Parameters**
+
+- `*bv`: non-Null bitvec_t pointer.
+
+
 ## Usage
 
 ```c
