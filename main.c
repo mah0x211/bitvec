@@ -14,9 +14,11 @@ int main (int argc, const char * argv[])
         return -1;
     }
     
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
+
     // returns 0
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
-    
+
     // set bit
     bitvec_set( ptr, 101 );
     printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
