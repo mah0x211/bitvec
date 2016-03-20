@@ -19,13 +19,16 @@ int main (int argc, const char * argv[])
     
     // set bit
     bitvec_set( ptr, 101 );
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
     bitvec_set( ptr, 3 );
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
     // returns 1
     printf( "101: %d\n", bitvec_get( ptr, 101 ) );
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
     
     // unset bit
     bitvec_unset( ptr, 3 );
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
     // returns 0
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
     
@@ -42,15 +45,17 @@ int main (int argc, const char * argv[])
 
     // set range
     assert( bitvec_set_range( ptr, 62, 90 ) == 0 );
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
     for( size_t i = 62; i <= 90; i++ ){
         assert( bitvec_get( ptr, i ) == 1 );
     }
     // unset range
     assert( bitvec_unset_range( ptr, 62, 90 ) == 0 );
+    printf( "ntz: %zu\n", bitvec_ntz( ptr ) );
     for( size_t i = 62; i <= 90; i++ ){
         assert( bitvec_get( ptr, i ) == 0 );
     }
-    
+
     // resize
     bitvec_resize( ptr, 107 );
     // return -1
