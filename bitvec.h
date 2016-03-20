@@ -34,13 +34,16 @@
 #include <string.h>
 
 #define BV_TYPE uint64_t
+
 static const uint8_t BV_BIT = CHAR_BIT * sizeof( BV_TYPE );
+
 
 typedef struct {
     size_t nbit;
     size_t nvec;
     BV_TYPE *vec;
 } bitvec_t;
+
 
 #define BIT2VEC_SIZE(nbit) \
     (nbit < BV_BIT ? 1 :( nbit / BV_BIT ) + !!( nbit % BV_BIT ))
@@ -53,7 +56,7 @@ static inline int bitvec_init( bitvec_t *bv, size_t nbit )
         return 0;
     }
     bv->vec = NULL;
-    
+
     return -1;
 }
 
@@ -66,13 +69,13 @@ static inline int bitvec_resize( bitvec_t *bv, size_t nbit )
     {
         size_t nvec = BIT2VEC_SIZE( nbit );
         BV_TYPE *vec = bv->vec;
-        
+
         // mem error
         if( nvec != bv->nvec && 
             !( vec = realloc( vec, sizeof( BV_TYPE ) * nvec ) ) ){
             return -1;
         }
-        
+
         // clear allocated bits
         if( nvec > bv->nvec ){
             memset( vec + bv->nvec, 0, ( nvec - bv->nvec ) * sizeof( BV_TYPE ) );
@@ -81,11 +84,11 @@ static inline int bitvec_resize( bitvec_t *bv, size_t nbit )
         else {
             vec[nvec - 1] &= ( ~((BV_TYPE)0) >> ( BV_BIT * nvec - nbit - 1 ) );
         }
-        
+
         bv->vec = vec;
         bv->nvec = nvec;
         bv->nbit = nbit;
-        
+
         return 0;
     }
 }
@@ -102,12 +105,68 @@ static inline void bitvec_dispose( bitvec_t *bv )
 }
 
 
+
+/*
+ *  Bit Twiddling Hacks By Sean Eron Anderson
+ *  Count the consecutive zero bits on the right with multiply and lookup
+ *  http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
+ *
+ *  m-sequence(maximal length sequence)
+ *
+ *    0x0218A7A392DD9ABFUL
+ *    0x02FCA8CF75A6C487UL
+ *    0x03F566ED27179461UL
+ *    0x03C953422DFAE33BUL
+ *    0x03848D96BBCC54FDUL
+ *    0x03731D7ED10B2A4FUL
+ *
+ *
+ *  mapping table calculation
+ *
+ *    uint_fast8_t tbl[64] = {0};
+ *    uint_fast64_t m = BIT_MLS;
+ *    uint_fast8_t i = 0;
+ *
+ *    for(; i < 64; i++ ){
+ *    tbl[m >> 58] = i;
+ *        m <<= 1;
+ *    }
+ *
+ */
+
+#define BV_MLS64    UINT64_C(0x03F566ED27179461)
+
+static const uint_fast8_t BV_NTZ64TBL[64] = {
+    0, 1, 59, 2, 60, 40, 54, 3, 61, 32, 49, 41, 55, 19, 35, 4, 62, 52, 30, 33,
+    50, 12, 14, 42, 56, 16, 27, 20, 36, 23, 44, 5, 63, 58, 39, 53, 31, 48, 18,
+    34, 51, 29, 11, 13, 15, 26, 22, 43, 57, 38, 47, 17, 28, 10, 25, 21, 37, 46, 
+    9, 24, 45, 8, 7, 6
+};
+
+
+static inline size_t bitvec_ntz( bitvec_t *bv )
+{
+    BV_TYPE *vec = bv->vec;
+    size_t idx = 0;
+
+    for(; idx < bv->nvec; idx++ )
+    {
+        if( vec[idx] ){
+            return ( BV_BIT * idx ) +
+                    BV_NTZ64TBL[( ( vec[idx] & -(vec[idx]) ) * BV_MLS64) >> 58];
+        }
+    }
+
+    return 0;
+}
+
+
 static inline int bitvec_get( bitvec_t *bv, BV_TYPE pos )
 {
     if( bv->vec && pos <= bv->nbit ){
         return (int)((bv->vec[pos/BV_BIT] >> (pos % BV_BIT)) & (BV_TYPE)1);
     }
-    
+
     return -1;
 }
 
@@ -118,7 +177,7 @@ static inline int bitvec_set( bitvec_t *bv, BV_TYPE pos )
         bv->vec[pos / BV_BIT] |= (BV_TYPE)1 << ( pos % BV_BIT );
         return 0;
     }
-    
+
     return -1;
 }
 
@@ -129,7 +188,7 @@ static inline int bitvec_unset( bitvec_t *bv, BV_TYPE pos )
         bv->vec[pos / BV_BIT] &= ~( (BV_TYPE)1 << ( pos % BV_BIT ) );
         return 0;
     }
-    
+
     return -1;
 }
 
@@ -141,23 +200,23 @@ static inline int bitvec_set_range( bitvec_t *bv, BV_TYPE from, BV_TYPE to )
         BV_TYPE *vec = bv->vec;
         size_t start = from / BV_BIT;
         size_t end = to / BV_BIT;
-        
+
         if( start == end ){
             vec[start] |= (~( (~(BV_TYPE)1) << ( to - from ) ) << from);
         }
         else {
             size_t pos = start + 1;
-            
+
             for(; pos < end; pos++ ){
                 vec[pos] |= ~(BV_TYPE)0;
             }
             vec[start] |= (~(BV_TYPE)0) << ( from % BV_BIT );
             vec[end] |= ~((~(BV_TYPE)1) << ( to % BV_BIT ));
         }
-        
+
         return 0;
     }
-    
+
     return -1;
 }
 
@@ -169,23 +228,23 @@ static inline int bitvec_unset_range( bitvec_t *bv, BV_TYPE from, BV_TYPE to )
         BV_TYPE *vec = bv->vec;
         size_t start = from / BV_BIT;
         size_t end = to / BV_BIT;
-        
+
         if( start == end ){
             vec[start] &= ~(~( (~(BV_TYPE)1) << ( to - from ) ) << from);
         }
         else {
             size_t pos = start + 1;
-            
+
             for(; pos < end; pos++ ){
                 vec[pos] &= (BV_TYPE)0;
             }
             vec[start] &= ~((~(BV_TYPE)0) << ( from % BV_BIT ));
             vec[end] &= ~(BV_TYPE)1 << ( to % BV_BIT );
         }
-        
+
         return 0;
     }
-    
+
     return -1;
 }
 
