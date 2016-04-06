@@ -102,7 +102,7 @@ returns `0` on success, or `-1` if a `pos` is out of range.
 
 ## Getting a number of trailing zeros
 
-### int bitvec_ntz( bitvec_t *bv )
+### size_t bitvec_ntz( bitvec_t *bv )
 
 returns a number of trailing zeros.
 
@@ -113,9 +113,10 @@ returns a number of trailing zeros.
 
 ## Find first zero bit
 
-### int bitvec_ffz( bitvec_t *bv )
+### size_t bitvec_ffz( bitvec_t *bv )
 
-returns a first zero bit.
+returns a position of first zero bit. if not found, returns a SIZE_MAX.
+
 
 **Parameters**
 
