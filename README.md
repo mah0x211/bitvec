@@ -1,6 +1,6 @@
 # bitvec.h
 
-bit-vector header library.  
+bit-vector header library.
 
 ---
 
@@ -8,8 +8,8 @@ bit-vector header library.
 
 ### Data type of vector
 
-- **#define BV_TYPE uint64_t**  
-  you can be changed to the following types;  
+- **#define BV_TYPE uint64_t**
+  you can be changed to the following types;
   `uint8_t`, `uint16_t` or `uint32_t`
 
 
@@ -30,7 +30,7 @@ this function initialize `bv` member fields and allocate a `nbit` size memory.
 
 ### int bitvec_resize( bitvec_t *bv, size_t nbit )
 
-this function tries to change the bit size of `bv`.  
+this function tries to change the bit size of `bv`.
 
 **Parameters**
 
@@ -39,7 +39,7 @@ this function tries to change the bit size of `bv`.
 
 **Return Values**
 
-returns `0` on success, or `-1` on failure.  
+returns `0` on success, or `-1` on failure.
 
 **Errors**
 
@@ -111,6 +111,17 @@ returns a number of trailing zeros.
 - `*bv`: non-Null bitvec_t pointer.
 
 
+## Find first zero bit
+
+### int bitvec_ffz( bitvec_t *bv )
+
+returns a first zero bit.
+
+**Parameters**
+
+- `*bv`: non-Null bitvec_t pointer.
+
+
 ## Usage
 
 ```c
@@ -123,33 +134,33 @@ int main (int argc, const char * argv[])
 {
     bitvec_t bv;
     bitvec_t *ptr = &bv;
-    
+
     // init 128 bit
     if( bitvec_init( ptr, 128 ) == -1 ){
         perror( "failed to bitvec_alloc()" );
         return -1;
     }
-    
+
     // returns 0
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
-    
+
     // set bit
     bitvec_set( ptr, 101 );
     bitvec_set( ptr, 3 );
     // returns 1
     printf( "101: %d\n", bitvec_get( ptr, 101 ) );
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
-    
+
     // unset bit
     bitvec_unset( ptr, 3 );
     // returns 0
     printf( "3: %d\n", bitvec_get( ptr, 3 ) );
-    
+
     // cannot set a bit greater than 128 bit
     assert( bitvec_set( ptr, 129 ) == -1 );
     // returns -1
     printf( "129: %d\n", bitvec_get( ptr, 129 ) );
-    
+
     // resize
     bitvec_resize( ptr, 140 );
     assert( bitvec_set( ptr, 129 ) == 0 );
@@ -166,18 +177,26 @@ int main (int argc, const char * argv[])
     for( size_t i = 62; i <= 90; i++ ){
         assert( bitvec_get( ptr, i ) == 0 );
     }
-    
+
     // resize
     bitvec_resize( ptr, 107 );
     // return -1
     printf( "129: %d\n", bitvec_get( ptr, 129 ) );
     // returns 1
     printf( "101: %d\n", bitvec_get( ptr, 101 ) );
-    
+
     // dispose
     bitvec_dispose( ptr );
-    
+
     return 0;
 }
 ```
+
+
+## WARNING
+
+the following API's currently must be used for 64 bit vector.
+
+- `int bitvec_ntz( bitvec_t *bv )`
+- `int bitvec_ffz( bitvec_t *bv )`
 
