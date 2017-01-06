@@ -51,9 +51,9 @@ typedef struct {
 
 static inline int bitvec_init( bitvec_t *bv, size_t nbit )
 {
-    bv->nbit = nbit;
     bv->nvec = BIT2VEC_SIZE( nbit );
     if( ( bv->vec = calloc( bv->nvec, sizeof( BV_TYPE ) ) ) ){
+        bv->nbit = bv->nvec * BV_BIT;
         return 0;
     }
     bv->vec = NULL;
@@ -69,26 +69,31 @@ static inline int bitvec_resize( bitvec_t *bv, size_t nbit )
     else
     {
         size_t nvec = BIT2VEC_SIZE( nbit );
-        BV_TYPE *vec = bv->vec;
 
-        // mem error
-        if( nvec != bv->nvec && 
-            !( vec = realloc( vec, sizeof( BV_TYPE ) * nvec ) ) ){
-            return -1;
-        }
+        if( nvec != bv->nvec )
+        {
+            BV_TYPE *vec = realloc( bv->vec, sizeof( BV_TYPE ) * nvec );
 
-        // clear allocated bits
-        if( nvec > bv->nvec ){
-            memset( vec + bv->nvec, 0, ( nvec - bv->nvec ) * sizeof( BV_TYPE ) );
-        }
-        // clear unused bits
-        else {
-            vec[nvec - 1] &= ( ~((BV_TYPE)0) >> ( BV_BIT * nvec - nbit - 1 ) );
-        }
+            // mem error
+            if( !vec ){
+                return -1;
+            }
 
-        bv->vec = vec;
-        bv->nvec = nvec;
-        bv->nbit = nbit;
+            // update number of bit capacity
+            bv->nbit = nvec * BV_BIT;
+
+            // clear allocated bits
+            if( nvec > bv->nvec ){
+                memset( vec + bv->nvec, 0, ( nvec - bv->nvec ) * sizeof( BV_TYPE ) );
+            }
+            // clear unused bits
+            else {
+                vec[nvec - 1] &= ( ~((BV_TYPE)0) >> ( bv->nbit - nbit - 1 ) );
+            }
+
+            bv->vec = vec;
+            bv->nvec = nvec;
+        }
 
         return 0;
     }
